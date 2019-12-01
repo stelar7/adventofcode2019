@@ -3,21 +3,28 @@ package day1;
 import utils.sources.IntFromFileSupplier;
 
 import java.util.*;
-import java.util.function.Supplier;
+import java.util.function.*;
 
 public class Two
 {
     public static void main(String[] args)
     {
-        Supplier<Integer> data  = new IntFromFileSupplier("day1.input", true);
-        Set<Integer>      known = new HashSet<>(Collections.singletonList(0));
-        int               freq  = 0;
+        IntUnaryOperator toFuelValue = i -> Math.floorDiv(i, 3) - 2;
+        Queue<Integer> values = new ArrayDeque<>(IntFromFileSupplier.create("day1.input", false)
+                                                                    .getDataSource());
         
-        do
+        long total = 0;
+        while (values.peek() != null)
         {
-            freq += data.get();
-        } while (known.add(freq));
+            int val  = values.poll();
+            int real = toFuelValue.applyAsInt(val);
+            if (real > 0)
+            {
+                total += real;
+                values.add(real);
+            }
+        }
         
-        System.out.println(freq);
+        System.out.println(total);
     }
 }
