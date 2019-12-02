@@ -1,7 +1,5 @@
 package day2;
 
-import utils.sources.StringFromFileSupplier;
-
 import java.util.Arrays;
 
 public class Two
@@ -37,28 +35,24 @@ public class Two
                 break;
             }
             
-            One.inst_action.get(op).apply(tape, i);
+            One.inst_action
+                    .get(op)
+                    .apply(tape, i);
         }
     }
     
-    static int[] tape;
+    static int[] tape_cache;
     
     private static int[] getTape()
     {
-        if (tape != null)
+        if (tape_cache != null)
         {
             int[] inner = new int[256];
-            System.arraycopy(tape, 0, inner, 0, tape.length);
+            System.arraycopy(tape_cache, 0, inner, 0, tape_cache.length);
             return inner;
         }
-        
-        tape = new int[256];
-        String input = StringFromFileSupplier.create("day2.input", false).get();
-        for (int i = 0; i < input.split(",").length; i++)
-        {
-            tape[i] = Integer.parseInt(input.split(",")[i]);
-        }
-        
+    
+        tape_cache = One.getTape();
         return getTape();
     }
 }

@@ -1,6 +1,6 @@
 package day2;
 
-import utils.sources.StringFromFileSupplier;
+import utils.sources.*;
 
 import java.util.*;
 import java.util.function.BiFunction;
@@ -59,13 +59,13 @@ public class One
         System.out.println(tape[0]);
     }
     
-    private static int[] getTape()
+    public static int[] getTape()
     {
-        int[]  tape  = new int[256];
-        String input = StringFromFileSupplier.create("day2.input", false).get();
-        for (int i = 0; i < input.split(",").length; i++)
+        int[]         tape  = new int[256];
+        List<Integer> input = IntFromFileSupplier.createFromCommaFile("day2.input", false).getDataSource();
+        for (int i = 0; i < input.size(); i++)
         {
-            tape[i] = Integer.parseInt(input.split(",")[i]);
+            tape[i] = input.get(i);
         }
         
         return tape;
