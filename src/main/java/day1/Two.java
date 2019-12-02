@@ -10,8 +10,7 @@ public class Two
     public static void main(String[] args)
     {
         IntUnaryOperator toFuelValue = i -> Math.floorDiv(i, 3) - 2;
-        Queue<Integer> values = new ArrayDeque<>(IntFromFileSupplier.create("day1.input", false)
-                                                                    .getDataSource());
+        Queue<Integer>   values      = new ArrayDeque<>(IntFromFileSupplier.create("day1.input", false).getDataSource());
         
         long total = 0;
         while (values.peek() != null)
