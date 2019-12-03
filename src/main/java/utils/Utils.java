@@ -1,6 +1,7 @@
 package utils;
 
-import java.awt.*;
+import org.joml.Vector2i;
+
 import java.io.*;
 import java.lang.reflect.*;
 import java.time.LocalDateTime;
@@ -91,6 +92,13 @@ public class Utils
                      .orElse(Integer.MAX_VALUE);
     }
     
+    public static int max(int... numbers)
+    {
+        return Arrays.stream(numbers)
+                     .max()
+                     .orElse(Integer.MIN_VALUE);
+    }
+    
     public static int sum(int... numbers)
     {
         return Arrays.stream(numbers).sum();
@@ -116,8 +124,13 @@ public class Utils
         return letterCount;
     }
     
-    public static int manhattanDistance(Point one, Point two)
+    public static int manhattanDistance(Vector2i one, Vector2i two)
     {
-        return (int) (Math.abs(two.getX() - one.getX()) + Math.abs(two.getY() - one.getY()));
+        return (Math.abs(two.x - one.x) + Math.abs(two.y - one.y));
+    }
+    
+    public static <T> Set<T> intersection(Collection<T> a, Collection<T> b)
+    {
+        return a.stream().distinct().filter(b::contains).collect(Collectors.toSet());
     }
 }
