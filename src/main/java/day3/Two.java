@@ -4,14 +4,13 @@ import org.joml.Vector2i;
 import utils.Utils;
 import utils.sources.StringFromFileSupplier;
 
-import java.io.IOException;
 import java.util.*;
 
 public class Two
 {
-    public static void main(String[] args) throws IOException
+    public static void main(String[] args)
     {
-        List<String> wires = StringFromFileSupplier.create("day3.input", false).getDataSource();
+        List<String> wires         = StringFromFileSupplier.create("day3.input", false).getDataSource();
         
         List<Map<Vector2i, Integer>> seens = new ArrayList<>();
         for (String wire : wires)
