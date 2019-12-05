@@ -80,7 +80,7 @@ public class Two
         
         for (; i[0] < tape.length; )
         {
-            OpCode opCode = new OpCode(String.valueOf(tape[i[0]]));
+            OpCode opCode = new OpCode(tape[i[0]]);
             
             if (opCode.opCode == 99)
             {

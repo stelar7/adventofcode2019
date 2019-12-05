@@ -68,9 +68,8 @@ public class One
         Integer[] i = new Integer[]{0};
         for (; i[0] < tape.length; )
         {
-            int    opInt    = tape[i[0]];
-            String opString = String.valueOf(opInt);
-            OpCode opCode   = new OpCode(opString);
+            int    opInt  = tape[i[0]];
+            OpCode opCode = new OpCode(opInt);
             
             if (opCode.opCode == 99)
             {
@@ -105,52 +104,12 @@ public class One
         public int param1Mode;
         public int opCode;
         
-        public OpCode(String opString)
+        public OpCode(int opRaw)
         {
-            if (opString.length() == 5)
-            {
-                param3Mode = Integer.parseInt(opString.substring(0, 1));
-                param2Mode = Integer.parseInt(opString.substring(1, 2));
-                param1Mode = Integer.parseInt(opString.substring(2, 3));
-                
-                opCode = Integer.parseInt(opString.substring(3, 5));
-            }
-            
-            if (opString.length() == 4)
-            {
-                param3Mode = 0;
-                param2Mode = Integer.parseInt(opString.substring(0, 1));
-                param1Mode = Integer.parseInt(opString.substring(1, 2));
-                
-                opCode = Integer.parseInt(opString.substring(2, 4));
-            }
-            
-            if (opString.length() == 3)
-            {
-                param3Mode = 0;
-                param2Mode = 0;
-                param1Mode = Integer.parseInt(opString.substring(0, 1));
-                
-                opCode = Integer.parseInt(opString.substring(1, 3));
-            }
-            
-            if (opString.length() == 2)
-            {
-                param3Mode = 0;
-                param2Mode = 0;
-                param1Mode = 0;
-                
-                opCode = Integer.parseInt(opString.substring(0, 2));
-            }
-            
-            if (opString.length() == 1)
-            {
-                param3Mode = 0;
-                param2Mode = 0;
-                param1Mode = 0;
-                
-                opCode = Integer.parseInt(opString.substring(0, 1));
-            }
+            opCode = opRaw % 100;
+            param1Mode = opRaw / 100 % 10;
+            param2Mode = opRaw / 1000 % 10;
+            param3Mode = opRaw / 10000 % 10;
         }
         
         public int getParam3Mode()
