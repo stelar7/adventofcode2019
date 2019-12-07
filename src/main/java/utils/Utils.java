@@ -133,4 +133,31 @@ public class Utils
     {
         return a.stream().distinct().filter(b::contains).collect(Collectors.toSet());
     }
+    
+    public static <T> List<List<T>> permutations(List<T> original)
+    {
+        if (original.size() == 0)
+        {
+            List<List<T>> result = new ArrayList<>();
+            result.add(new ArrayList<T>());
+            return result;
+        }
+        
+        T firstElement = original.remove(0);
+        
+        List<List<T>> returnValue  = new ArrayList<>();
+        List<List<T>> permutations = permutations(original);
+        
+        for (List<T> smallerPermutated : permutations)
+        {
+            for (int index = 0; index <= smallerPermutated.size(); index++)
+            {
+                List<T> temp = new ArrayList<T>(smallerPermutated);
+                temp.add(index, firstElement);
+                returnValue.add(temp);
+            }
+        }
+        
+        return returnValue;
+    }
 }
