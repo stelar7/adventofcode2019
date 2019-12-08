@@ -7,6 +7,7 @@ import java.lang.reflect.*;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Function;
 import java.util.regex.*;
 import java.util.stream.Collectors;
 
@@ -27,19 +28,6 @@ public class Utils
         Arrays.stream(vars).forEach(v -> matches.put(v, m.group(v)));
         
         return matches;
-    }
-    
-    public static int getIndexOfHighestValue(int[] array)
-    {
-        int largest = 0;
-        for (int i = 1; i < array.length; i++)
-        {
-            if (array[i] > array[largest])
-            {
-                largest = i;
-            }
-        }
-        return largest;
     }
     
     public static LocalDateTime localDateTimeFromRegex(String input, String regex)
@@ -124,6 +112,21 @@ public class Utils
         return letterCount;
     }
     
+    public static int[] numberCount(String a)
+    {
+        int[] letterCount = new int[10];
+        a.chars().forEach(c -> letterCount[c - '0']++);
+        return letterCount;
+    }
+    
+    
+    public static int[] charCount(String a)
+    {
+        int[] chars = new int[128];
+        a.chars().forEach(c -> chars[c]++);
+        return chars;
+    }
+    
     public static int manhattanDistance(Vector2i one, Vector2i two)
     {
         return (Math.abs(two.x - one.x) + Math.abs(two.y - one.y));
@@ -139,7 +142,7 @@ public class Utils
         if (original.size() == 0)
         {
             List<List<T>> result = new ArrayList<>();
-            result.add(new ArrayList<T>());
+            result.add(new ArrayList<>());
             return result;
         }
         
@@ -152,12 +155,84 @@ public class Utils
         {
             for (int index = 0; index <= smallerPermutated.size(); index++)
             {
-                List<T> temp = new ArrayList<T>(smallerPermutated);
+                List<T> temp = new ArrayList<>(smallerPermutated);
                 temp.add(index, firstElement);
                 returnValue.add(temp);
             }
         }
         
         return returnValue;
+    }
+    
+    public static Pair<String, String> split(String input, int index)
+    {
+        String a = input.substring(0, index);
+        String b = input.substring(index);
+        return new Pair<>(a, b);
+    }
+    
+    public static List<String> chunk(String input, int size)
+    {
+        String       current = input;
+        List<String> output  = new ArrayList<>();
+        
+        while (!current.isEmpty())
+        {
+            Pair<String, String> layer = split(current, size);
+            output.add(layer.getA());
+            current = layer.getB();
+        }
+        
+        return output;
+    }
+    
+    public static <T, R extends Comparable<R>> int getIndexOfLowestValue(List<T> input, Function<T, R> mapper)
+    {
+        int fewestIndex = -1;
+        R   fewestValue = null;
+        
+        for (int i = 0; i < input.size(); i++)
+        {
+            T layer = input.get(i);
+            R test  = mapper.apply(layer);
+            
+            if (test == null)
+            {
+                continue;
+            }
+            
+            if (fewestValue == null || test.compareTo(fewestValue) < 0)
+            {
+                fewestValue = test;
+                fewestIndex = i;
+            }
+        }
+        
+        return fewestIndex;
+    }
+    
+    public static <T, R extends Comparable<R>> int getIndexOfHighestValue(List<T> input, Function<T, R> mapper)
+    {
+        int highestIndex = -1;
+        R   highestValue = null;
+        
+        for (int i = 0; i < input.size(); i++)
+        {
+            T layer = input.get(i);
+            R test  = mapper.apply(layer);
+            
+            if (test == null)
+            {
+                continue;
+            }
+            
+            if (highestValue == null || test.compareTo(highestValue) > 0)
+            {
+                highestValue = test;
+                highestIndex = i;
+            }
+        }
+        
+        return highestIndex;
     }
 }

@@ -61,12 +61,6 @@ public class One
             }
         }
         
-        int A = runAmp(4, 0);
-        int B = runAmp(3, A);
-        int C = runAmp(2, B);
-        int D = runAmp(1, C);
-        int E = runAmp(0, D);
-        
         System.out.println("Best signal = " + best);
     }
 }
