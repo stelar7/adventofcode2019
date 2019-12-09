@@ -4,6 +4,7 @@ import utils.*;
 import utils.sources.StringFromFileSupplier;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class Two
 {
@@ -12,20 +13,15 @@ public class Two
         String input = StringFromFileSupplier.create("day8.input", false).get();
         
         List<String> layers = Utils.chunk(input, 25 * 6);
+        String       image  = "2".repeat(25 * 6);
         
-        String image = "2".repeat(25 * 6);
         for (int i = layers.size() - 1; i > -1; i--)
         {
             image = parseLayer(image, layers.get(i));
         }
         
         System.out.println("█".repeat(25));
-        for (int i = 0, j = 25; i < image.length(); i += 25, j += 25)
-        {
-            String outp = image.substring(i, j);
-            outp.chars().mapToObj(a -> a == '0' ? "█" : " ").forEach(System.out::print);
-            System.out.println();
-        }
+        Utils.chunk(image, 25).forEach(line -> System.out.println(line.chars().mapToObj(a -> a == '0' ? "█" : " ").collect(Collectors.joining())));
         System.out.println("█".repeat(25));
     }
     
