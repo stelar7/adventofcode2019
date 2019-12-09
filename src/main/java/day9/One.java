@@ -1,13 +1,17 @@
 package day9;
 
-import utils.sources.StringFromFileSupplier;
+import utils.IntCodeMachine;
 
 public class One
 {
     public static void main(String[] args)
     {
-        String input = StringFromFileSupplier.create("day9.input", false).get();
-        
-        
+        IntCodeMachine machine = new IntCodeMachine("day9.input");
+        machine.runToInput();
+        machine.input(1);
+        while (machine.running)
+        {
+            machine.runToOutput();
+        }
     }
 }

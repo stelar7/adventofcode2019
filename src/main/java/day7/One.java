@@ -21,18 +21,18 @@ public class One
             machine.next();
         }
         
-        public void input(int prev)
+        public void input(long prev)
         {
             machine.input(prev);
         }
         
-        public int output()
+        public long output()
         {
             return machine.output();
         }
     }
     
-    public static int runAmp(int setting, int prev)
+    public static long runAmp(int setting, long prev)
     {
         Amp A = new Amp(setting);
         A.machine.runToInput();
@@ -45,15 +45,15 @@ public class One
     {
         IntCodeMachine machine = new IntCodeMachine("day7.input");
         
-        int                 best         = 0;
+        long                best         = 0;
         List<List<Integer>> permutations = Utils.permutations(new ArrayList<>(List.of(0, 1, 2, 3, 4)));
         for (List<Integer> permutation : permutations)
         {
-            int A = runAmp(permutation.get(0), 0);
-            int B = runAmp(permutation.get(1), A);
-            int C = runAmp(permutation.get(2), B);
-            int D = runAmp(permutation.get(3), C);
-            int E = runAmp(permutation.get(4), D);
+            long A = runAmp(permutation.get(0), 0);
+            long B = runAmp(permutation.get(1), A);
+            long C = runAmp(permutation.get(2), B);
+            long D = runAmp(permutation.get(3), C);
+            long E = runAmp(permutation.get(4), D);
             
             if (E > best)
             {

@@ -9,7 +9,7 @@ public class IntCodeMachine
     
     public enum OPCode
     {
-        HALT(99), ADD(1), MUL(2), INPUT(3), OUTPUT(4), JUMP_TRUE(5), JUMP_FALSE(6), LESS(7), EQUAL(8);
+        HALT(99), ADD(1), MUL(2), INPUT(3), OUTPUT(4), JUMP_TRUE(5), JUMP_FALSE(6), LESS(7), EQUAL(8), REL_ADJUST(9);
         
         int code;
         
@@ -24,147 +24,261 @@ public class IntCodeMachine
         }
     }
     
+    static class OpcodeStatus
+    {
+        int  mode;
+        long param;
+        long val;
+        
+        public OpcodeStatus(int mode, long param, long val)
+        {
+            this.mode = mode;
+            this.param = param;
+            this.val = val;
+        }
+    }
     
-    Map<OPCode, TriFunction<Integer[], Integer[], OpCodeParameters, Void>> ops = new HashMap<>()
+    private void printOpcode(String code, long rel, List<OpcodeStatus> stats)
+    {
+        System.out.print(code + " ");
+        for (OpcodeStatus stat : stats)
+        {
+            if (stat.mode == 0)
+            {
+                System.out.printf("%%%d(%d) ", stat.param, stat.val);
+            }
+            if (stat.mode == 1)
+            {
+                System.out.printf("%d ", stat.param);
+            }
+            if (stat.mode == 2)
+            {
+                System.out.printf("%%%d(%d)+%d ", stat.param, stat.val, rel);
+            }
+        }
+    }
+    
+    Map<OPCode, QuadFunction<Map<Long, Long>, Long[], Long[], OpCodeParameters, Void>> ops = new HashMap<>()
     {{
         
-        put(OPCode.HALT, (tape, index, op) -> null);
+        put(OPCode.HALT, (tape, index, relbase, op) -> {
+            System.out.println("HALT");
+            return null;
+        });
         
-        put(OPCode.ADD, (tape, index, op) -> {
-            int paramA = tape[index[0] + 1];
-            int paramB = tape[index[0] + 2];
-            int paramC = tape[index[0] + 3];
+        put(OPCode.ADD, (tape, index, relbase, op) -> {
+            long valueA = getValueFromParamMode(tape, relbase, op.param1Mode, index[0] + 1L, false);
+            long valueB = getValueFromParamMode(tape, relbase, op.param2Mode, index[0] + 2L, false);
+            long valueC = getValueFromParamMode(tape, relbase, op.param3Mode, index[0] + 3L, true);
             
-            int valueA = getValueFromParamMode(tape, op.param1Mode, paramA);
-            int valueB = getValueFromParamMode(tape, op.param2Mode, paramB);
+            long result = valueA + valueB;
             
-            int result = valueA + valueB;
-            
-            tape[paramC] = result;
+            tape.put(valueC, result);
             index[0] += 4;
+            
+            if (debugging)
+            {
+                List<OpcodeStatus> status = Arrays.asList(new OpcodeStatus(op.param1Mode, memory.getOrDefault(index[0] + 1L, 0L), valueA),
+                                                          new OpcodeStatus(op.param2Mode, memory.getOrDefault(index[0] + 2L, 0L), valueB),
+                                                          new OpcodeStatus(op.param3Mode, memory.getOrDefault(index[0] + 3L, 0L), valueC));
+                printOpcode("MUL", relbase[0], status);
+                System.out.print("= " + result);
+                System.out.println();
+            }
+            
             return null;
         });
         
-        put(OPCode.MUL, (tape, index, op) -> {
-            int paramA = tape[index[0] + 1];
-            int paramB = tape[index[0] + 2];
-            int paramC = tape[index[0] + 3];
+        put(OPCode.MUL, (tape, index, relbase, op) -> {
+            long valueA = getValueFromParamMode(tape, relbase, op.param1Mode, index[0] + 1L, false);
+            long valueB = getValueFromParamMode(tape, relbase, op.param2Mode, index[0] + 2L, false);
+            long valueC = getValueFromParamMode(tape, relbase, op.param3Mode, index[0] + 3L, true);
             
-            int valueA = getValueFromParamMode(tape, op.param1Mode, paramA);
-            int valueB = getValueFromParamMode(tape, op.param2Mode, paramB);
-            
-            int result = valueA * valueB;
-            tape[paramC] = result;
+            long result = valueA * valueB;
+            tape.put(valueC, result);
             index[0] += 4;
+            
+            
+            if (debugging)
+            {
+                List<OpcodeStatus> status = Arrays.asList(new OpcodeStatus(op.param1Mode, memory.getOrDefault(index[0] + 1L, 0L), valueA),
+                                                          new OpcodeStatus(op.param2Mode, memory.getOrDefault(index[0] + 2L, 0L), valueB),
+                                                          new OpcodeStatus(op.param3Mode, memory.getOrDefault(index[0] + 3L, 0L), valueC));
+                printOpcode("MUL", relbase[0], status);
+                System.out.print("= " + result);
+                System.out.println();
+            }
+            
             return null;
         });
         
         
-        put(OPCode.INPUT, (tape, index, op) -> {
-            int paramA = tape[index[0] + 1];
-            int valueA = getValueFromParamMode(tape, op.param1Mode, paramA);
-            int input  = op.getInput();
-            System.out.println("got input " + input);
-            tape[paramA] = op.getInput();
+        put(OPCode.INPUT, (tape, index, relbase, op) -> {
+            long valueA = getValueFromParamMode(tape, relbase, op.param1Mode, index[0] + 1L, true);
+            long input  = op.getInput();
+            tape.put(valueA, input);
             index[0] += 2;
+            
+            if (!debugging)
+            {
+                System.out.println("got input " + input);
+            } else
+            {
+                List<OpcodeStatus> status = Collections.singletonList(new OpcodeStatus(op.param1Mode, memory.getOrDefault(index[0] + 1L, 0L), valueA));
+                printOpcode("INN", relbase[0], status);
+                System.out.print("= " + input);
+                System.out.println();
+            }
+            
             return null;
         });
         
         
-        put(OPCode.OUTPUT, (tape, index, op) -> {
-            int paramA = tape[index[0] + 1];
-            int valueA = getValueFromParamMode(tape, op.param1Mode, paramA);
+        put(OPCode.OUTPUT, (tape, index, relbase, op) -> {
+            long valueA = getValueFromParamMode(tape, relbase, op.param1Mode, index[0] + 1L, false);
             index[0] += 2;
-            System.out.println("Send output " + valueA);
             op.output = valueA;
+            
+            if (!debugging)
+            {
+                System.out.println("Send output " + valueA);
+            } else
+            {
+                List<OpcodeStatus> status = Collections.singletonList(new OpcodeStatus(op.param1Mode, memory.getOrDefault(index[0] + 1L, 0L), valueA));
+                printOpcode("OUT", relbase[0], status);
+                System.out.print("= " + valueA);
+                System.out.println();
+            }
+            
             return null;
         });
         
-        put(OPCode.JUMP_TRUE, (tape, index, op) -> {
-            int paramA = tape[index[0] + 1];
-            int paramB = tape[index[0] + 2];
-            int valueA = getValueFromParamMode(tape, op.param1Mode, paramA);
-            int valueB = getValueFromParamMode(tape, op.param2Mode, paramB);
+        put(OPCode.JUMP_TRUE, (tape, index, relbase, op) -> {
+            long valueA = getValueFromParamMode(tape, relbase, op.param1Mode, index[0] + 1L, false);
+            long valueB = getValueFromParamMode(tape, relbase, op.param2Mode, index[0] + 2L, false);
             index[0] += 3;
             
             if (valueA != 0)
             {
                 index[0] = valueB;
             }
+            
+            
+            if (debugging)
+            {
+                List<OpcodeStatus> status = Arrays.asList(new OpcodeStatus(op.param1Mode, memory.getOrDefault(index[0] + 1L, 0L), valueA),
+                                                          new OpcodeStatus(op.param2Mode, memory.getOrDefault(index[0] + 2L, 0L), valueB));
+                printOpcode("JIT", relbase[0], status);
+                System.out.print("= " + (valueA != 0));
+                System.out.println();
+            }
+            
             return null;
         });
         
-        put(OPCode.JUMP_FALSE, (tape, index, op) -> {
-            int paramA = tape[index[0] + 1];
-            int paramB = tape[index[0] + 2];
-            int valueA = getValueFromParamMode(tape, op.param1Mode, paramA);
-            int valueB = getValueFromParamMode(tape, op.param2Mode, paramB);
+        put(OPCode.JUMP_FALSE, (tape, index, relbase, op) -> {
+            long valueA = getValueFromParamMode(tape, relbase, op.param1Mode, index[0] + 1L, false);
+            long valueB = getValueFromParamMode(tape, relbase, op.param2Mode, index[0] + 2L, false);
             index[0] += 3;
             
             if (valueA == 0)
             {
                 index[0] = valueB;
             }
+            
+            if (debugging)
+            {
+                List<OpcodeStatus> status = Arrays.asList(new OpcodeStatus(op.param1Mode, memory.getOrDefault(index[0] + 1L, 0L), valueA),
+                                                          new OpcodeStatus(op.param2Mode, memory.getOrDefault(index[0] + 2L, 0L), valueB));
+                printOpcode("JIF", relbase[0], status);
+                System.out.print("= " + (valueA == 0));
+                System.out.println();
+            }
+            
             return null;
         });
         
-        put(OPCode.LESS, (tape, index, op) -> {
-            int paramA = tape[index[0] + 1];
-            int paramB = tape[index[0] + 2];
-            int paramC = tape[index[0] + 3];
-            int valueA = getValueFromParamMode(tape, op.param1Mode, paramA);
-            int valueB = getValueFromParamMode(tape, op.param2Mode, paramB);
-            int valueC = getValueFromParamMode(tape, op.param3Mode, paramC);
+        put(OPCode.LESS, (tape, index, relbase, op) -> {
+            long valueA = getValueFromParamMode(tape, relbase, op.param1Mode, index[0] + 1L, false);
+            long valueB = getValueFromParamMode(tape, relbase, op.param2Mode, index[0] + 2L, false);
+            long valueC = getValueFromParamMode(tape, relbase, op.param3Mode, index[0] + 3L, true);
+            tape.compute(valueC, (k, v) -> valueA < valueB ? 1L : 0L);
             index[0] += 4;
             
-            if (valueA < valueB)
+            
+            if (debugging)
             {
-                tape[paramC] = 1;
-            } else
-            {
-                tape[paramC] = 0;
+                List<OpcodeStatus> status = Arrays.asList(new OpcodeStatus(op.param1Mode, memory.getOrDefault(index[0] + 1L, 0L), valueA),
+                                                          new OpcodeStatus(op.param2Mode, memory.getOrDefault(index[0] + 2L, 0L), valueB),
+                                                          new OpcodeStatus(op.param3Mode, memory.getOrDefault(index[0] + 3L, 0L), valueC));
+                printOpcode("LES", relbase[0], status);
+                System.out.print("= " + tape.get(valueC));
+                System.out.println();
             }
+            
             return null;
         });
         
-        put(OPCode.EQUAL, (tape, index, op) -> {
-            int paramA = tape[index[0] + 1];
-            int paramB = tape[index[0] + 2];
-            int paramC = tape[index[0] + 3];
-            int valueA = getValueFromParamMode(tape, op.param1Mode, paramA);
-            int valueB = getValueFromParamMode(tape, op.param2Mode, paramB);
-            int valueC = getValueFromParamMode(tape, op.param3Mode, paramC);
+        put(OPCode.EQUAL, (tape, index, relbase, op) -> {
+            long valueA = getValueFromParamMode(tape, relbase, op.param1Mode, index[0] + 1L, false);
+            long valueB = getValueFromParamMode(tape, relbase, op.param2Mode, index[0] + 2L, false);
+            long valueC = getValueFromParamMode(tape, relbase, op.param3Mode, index[0] + 3L, true);
+            tape.compute(valueC, (k, v) -> valueA == valueB ? 1L : 0L);
             index[0] += 4;
             
-            if (valueA == valueB)
+            
+            if (debugging)
             {
-                tape[paramC] = 1;
-            } else
-            {
-                tape[paramC] = 0;
+                List<OpcodeStatus> status = Arrays.asList(new OpcodeStatus(op.param1Mode, memory.getOrDefault(index[0] + 1L, 0L), valueA),
+                                                          new OpcodeStatus(op.param2Mode, memory.getOrDefault(index[0] + 2L, 0L), valueB),
+                                                          new OpcodeStatus(op.param3Mode, memory.getOrDefault(index[0] + 3L, 0L), valueC));
+                printOpcode("EQL", relbase[0], status);
+                System.out.print("= " + tape.get(valueC));
+                System.out.println();
             }
+            
+            return null;
+        });
+        
+        put(OPCode.REL_ADJUST, (tape, index, relbase, op) -> {
+            long valueA     = getValueFromParamMode(tape, relbase, op.param1Mode, index[0] + 1L, false);
+            long oldRelBase = relbase[0];
+            relbase[0] += valueA;
+            index[0] += 2;
+            
+            
+            if (debugging)
+            {
+                List<OpcodeStatus> status = Collections.singletonList(new OpcodeStatus(op.param1Mode, memory.getOrDefault(index[0] + 1L, 0L), valueA));
+                printOpcode("ADJ", oldRelBase, status);
+                System.out.print("-> " + relbase[0]);
+                System.out.println();
+            }
+            
             return null;
         });
     }};
     
-    public Integer[] index = new Integer[]{0};
-    Integer[] tape;
+    private Long[]          index        = new Long[]{0L};
+    private Long[]          relativeBase = new Long[]{0L};
+    private Map<Long, Long> memory       = new HashMap<>();
+    
     
     public OpCodeParameters currentOp = null;
     public OpCodeParameters prevOp    = null;
     
-    public boolean running = true;
+    public boolean running   = true;
+    public boolean debugging = false;
     
-    public IntCodeMachine(Integer[] tape)
+    public IntCodeMachine(Map<Long, Long> tape)
     {
-        this.tape = tape;
-        currentOp = new OpCodeParameters(tape[index[0]]);
+        this.memory = tape;
+        currentOp = new OpCodeParameters(Math.toIntExact(memory.get(index[0])));
     }
     
     public IntCodeMachine(String filename)
     {
-        this.tape = getTape(filename);
-        currentOp = new OpCodeParameters(tape[index[0]]);
+        this(getTape(filename));
     }
     
     public void next()
@@ -175,8 +289,8 @@ public class IntCodeMachine
             return;
         }
         
-        ops.get(currentOp.opCode).apply(tape, index, currentOp);
-        OpCodeParameters next = new OpCodeParameters(tape[index[0]]);
+        ops.get(currentOp.opCode).apply(memory, index, relativeBase, currentOp);
+        OpCodeParameters next = new OpCodeParameters(Math.toIntExact(memory.get(index[0])));
         prevOp = currentOp;
         currentOp = next;
     }
@@ -198,31 +312,42 @@ public class IntCodeMachine
         next();
     }
     
-    public void input(int prev)
+    public void input(long prev)
     {
         currentOp.setInput(prev);
     }
     
-    public int output()
+    public long output()
     {
         return prevOp != null ? prevOp.output : 0;
     }
     
-    public static Integer[] getTape(String filename)
+    public static Map<Long, Long> getTape(String filename)
     {
-        List<Integer> input = IntFromFileSupplier.createFromCommaFile(filename, false).getDataSource();
-        Integer[]     tape  = new Integer[input.size()];
+        List<Long>      input  = IntFromFileSupplier.longCreateFromCommaFile(filename, false).getDataSource();
+        Map<Long, Long> memory = new HashMap<>();
         for (int i = 0; i < input.size(); i++)
         {
-            tape[i] = input.get(i);
+            memory.put((long) i, input.get(i));
         }
         
-        return tape;
+        return memory;
     }
     
-    public static int getValueFromParamMode(Integer[] tape, int mode, int value)
+    public static long getValueFromParamMode(Map<Long, Long> memory, Long[] relbase, int mode, Long index, boolean isOutput)
     {
-        return mode == 0 ? tape[value] : value;
+        long value = memory.getOrDefault(index, 0L);
+        if (mode == 1)
+        {
+            return value;
+        }
+        
+        if (mode == 2)
+        {
+            value += relbase[0];
+        }
+        
+        return isOutput ? value : memory.getOrDefault(value, 0L);
     }
     
     public static class OpCodeParameters
@@ -231,8 +356,8 @@ public class IntCodeMachine
         public int    param2Mode;
         public int    param1Mode;
         public OPCode opCode;
-        public int    input;
-        public int    output;
+        public long   input;
+        public long   output;
         
         private boolean inputReady;
         
@@ -245,18 +370,18 @@ public class IntCodeMachine
         }
         
         
-        public int getOutput()
+        public long getOutput()
         {
             return output;
         }
         
-        public int getInput()
+        public long getInput()
         {
             inputReady = false;
             return input;
         }
         
-        public void setInput(int input)
+        public void setInput(long input)
         {
             this.input = input;
             inputReady = true;

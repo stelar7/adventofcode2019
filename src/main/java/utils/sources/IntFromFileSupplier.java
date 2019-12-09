@@ -40,4 +40,9 @@ public class IntFromFileSupplier extends FromFileSupplier<Integer>
     {
         return FromFileSupplier.<T>createFromArray(inputFile, s -> Arrays.stream(s.split(",")).map(Integer::parseInt).map(a -> (T) a).collect(Collectors.toList()), false);
     }
+    
+    public static <T> FromFileSupplier longCreateFromCommaFile(String inputFile, boolean infinite)
+    {
+        return FromFileSupplier.<T>createFromArray(inputFile, s -> Arrays.stream(s.split(",")).map(Long::parseLong).map(a -> (T) a).collect(Collectors.toList()), false);
+    }
 }

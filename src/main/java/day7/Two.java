@@ -10,7 +10,7 @@ public class Two
 {
     public static void main(String[] args)
     {
-        int best = 0;
+        long best = 0;
         
         List<List<Integer>> permutations2 = Utils.permutations(new ArrayList<>(List.of(5, 6, 7, 8, 9)));
         for (List<Integer> permutation : permutations2)
@@ -36,7 +36,7 @@ public class Two
                 previusAmp = currentAmp;
                 currentAmp = li.next();
                 
-                int test = previusAmp.output();
+                long test = previusAmp.output();
                 if (test > best)
                 {
                     best = test;
