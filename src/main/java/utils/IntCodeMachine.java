@@ -6,7 +6,6 @@ import java.util.*;
 
 public class IntCodeMachine
 {
-    
     public enum OPCode
     {
         HALT(99), ADD(1), MUL(2), INPUT(3), OUTPUT(4), JUMP_TRUE(5), JUMP_FALSE(6), LESS(7), EQUAL(8), REL_ADJUST(9);
@@ -262,6 +261,7 @@ public class IntCodeMachine
     private Long[]          index        = new Long[]{0L};
     private Long[]          relativeBase = new Long[]{0L};
     private Map<Long, Long> memory       = new HashMap<>();
+    private Map<Long, Long> memory_b     = new HashMap<>();
     
     
     public OpCodeParameters currentOp = null;
@@ -272,13 +272,25 @@ public class IntCodeMachine
     
     public IntCodeMachine(Map<Long, Long> tape)
     {
-        this.memory = tape;
+        this.memory.putAll(tape);
+        this.memory_b.putAll(tape);
         currentOp = new OpCodeParameters(Math.toIntExact(memory.get(index[0])));
     }
     
     public IntCodeMachine(String filename)
     {
         this(getTape(filename));
+    }
+    
+    public void reset()
+    {
+        memory.clear();
+        memory.putAll(memory_b);
+        index[0] = 0L;
+        relativeBase[0] = 0L;
+        prevOp = null;
+        running = true;
+        currentOp = new OpCodeParameters(Math.toIntExact(memory.get(index[0])));
     }
     
     public void next()
@@ -312,6 +324,14 @@ public class IntCodeMachine
         next();
     }
     
+    public void runToEnd()
+    {
+        while (currentOp.opCode != OPCode.HALT)
+        {
+            next();
+        }
+    }
+    
     public void input(long prev)
     {
         currentOp.setInput(prev);
@@ -320,6 +340,16 @@ public class IntCodeMachine
     public long output()
     {
         return prevOp != null ? prevOp.output : 0;
+    }
+    
+    public void setMemory(long address, long value)
+    {
+        memory.put(address, value);
+    }
+    
+    public long getMemory(long address)
+    {
+        return memory.get(address);
     }
     
     public static Map<Long, Long> getTape(String filename)

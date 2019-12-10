@@ -5,7 +5,7 @@ import java.util.List;
 public class RepeatingListIterator<T>
 {
     List<T> list;
-    int     index;
+    int     index = -1;
     
     public RepeatingListIterator(List<T> list)
     {

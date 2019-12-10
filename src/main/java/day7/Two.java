@@ -23,7 +23,7 @@ public class Two
             Amp                        E          = new Amp(permutation.get(4));
             RepeatingListIterator<Amp> li         = new RepeatingListIterator(List.of(A, B, C, D, E));
             
-            Amp currentAmp = li.get(0);
+            Amp currentAmp = li.next();
             System.out.println("init done");
             
             

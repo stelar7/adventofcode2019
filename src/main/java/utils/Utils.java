@@ -7,7 +7,7 @@ import java.lang.reflect.*;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Function;
+import java.util.function.*;
 import java.util.regex.*;
 import java.util.stream.Collectors;
 
@@ -42,18 +42,35 @@ public class Utils
     }
     
     
-    public static String getKeyForHighestValue(Map<String, Integer> data)
+    public static <T, Y> T getKeyForHighestValue(Map<T, Y> data, ToIntFunction<Y> mapper)
     {
-        final AtomicReference<String> maxKey   = new AtomicReference<>("");
-        int[]                         maxValue = {-1};
+        final AtomicReference<T> maxKey   = new AtomicReference<>();
+        int[]                    maxValue = {-1};
         data.forEach((k, v) -> {
-            maxValue[0] = maxValue[0] < v ? v : maxValue[0];
-            if (maxValue[0] == v)
+            int test = mapper.applyAsInt(v);
+            maxValue[0] = Math.max(maxValue[0], test);
+            
+            // replace key if same value
+            if (maxValue[0] == test)
             {
                 maxKey.set(k);
             }
         });
         return maxKey.get();
+    }
+    
+    public static <T, Y> void pushToMapList(Map<T, List<Y>> map, T key, Y value)
+    {
+        map.computeIfPresent(key, (k, v) -> {
+            v.add(value);
+            return v;
+        });
+        
+        map.computeIfAbsent(key, (k) -> {
+            List<Y> points = new ArrayList<>();
+            points.add(value);
+            return points;
+        });
     }
     
     public static <T> Map<String, String> extractRegex(String input, String regex, Class clazz)
