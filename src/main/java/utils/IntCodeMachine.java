@@ -114,18 +114,14 @@ public class IntCodeMachine
         
         put(OPCode.INPUT, (tape, index, relbase, op) -> {
             long valueA = getValueFromParamMode(tape, relbase, op.param1Mode, index[0] + 1L, true);
-            long input  = op.getInput();
-            tape.put(valueA, input);
+            tape.put(valueA, inputs.poll());
             index[0] += 2;
             
-            if (!debugging)
-            {
-                System.out.println("got input " + input);
-            } else
+            if (debugging)
             {
                 List<OpcodeStatus> status = Collections.singletonList(new OpcodeStatus(op.param1Mode, memory.getOrDefault(index[0] + 1L, 0L), valueA));
                 printOpcode("INN", relbase[0], status);
-                System.out.print("= " + input);
+                System.out.print("= " + tape.get(valueA));
                 System.out.println();
             }
             
@@ -136,12 +132,9 @@ public class IntCodeMachine
         put(OPCode.OUTPUT, (tape, index, relbase, op) -> {
             long valueA = getValueFromParamMode(tape, relbase, op.param1Mode, index[0] + 1L, false);
             index[0] += 2;
-            op.output = valueA;
+            outputs.add(valueA);
             
-            if (!debugging)
-            {
-                System.out.println("Send output " + valueA);
-            } else
+            if (debugging)
             {
                 List<OpcodeStatus> status = Collections.singletonList(new OpcodeStatus(op.param1Mode, memory.getOrDefault(index[0] + 1L, 0L), valueA));
                 printOpcode("OUT", relbase[0], status);
@@ -258,6 +251,10 @@ public class IntCodeMachine
         });
     }};
     
+    
+    Deque<Long> inputs  = new ArrayDeque<>();
+    Deque<Long> outputs = new ArrayDeque<>();
+    
     private Long[]          index        = new Long[]{0L};
     private Long[]          relativeBase = new Long[]{0L};
     private Map<Long, Long> memory       = new HashMap<>();
@@ -307,7 +304,10 @@ public class IntCodeMachine
         currentOp = next;
     }
     
-    public void runToInput()
+    /**
+     * runs untill the current op is an input op, or the machine halts
+     */
+    public void queueInput()
     {
         while (currentOp.opCode != OPCode.INPUT && currentOp.opCode != OPCode.HALT)
         {
@@ -315,7 +315,10 @@ public class IntCodeMachine
         }
     }
     
-    public void runToOutput()
+    /**
+     * runs untill the previous op is an input op, or the machine halts
+     */
+    public void queueOutput()
     {
         while (currentOp.opCode != OPCode.OUTPUT && currentOp.opCode != OPCode.HALT)
         {
@@ -323,6 +326,15 @@ public class IntCodeMachine
         }
         next();
     }
+    
+    public void queueOutput(int times)
+    {
+        for (int i = 0; i < times; i++)
+        {
+            queueOutput();
+        }
+    }
+    
     
     public void runToEnd()
     {
@@ -334,13 +346,24 @@ public class IntCodeMachine
     
     public void input(long prev)
     {
-        currentOp.setInput(prev);
+        inputs.addLast(prev);
     }
     
     public long output()
     {
-        return prevOp != null ? prevOp.output : 0;
+        return outputs.pollFirst();
     }
+    
+    public long peekOutput()
+    {
+        return outputs.peekFirst();
+    }
+    
+    public long lastOutput()
+    {
+        return outputs.pollLast();
+    }
+    
     
     public void setMemory(long address, long value)
     {
@@ -386,10 +409,6 @@ public class IntCodeMachine
         public int    param2Mode;
         public int    param1Mode;
         public OPCode opCode;
-        public long   input;
-        public long   output;
-        
-        private boolean inputReady;
         
         public OpCodeParameters(int opRaw)
         {
@@ -397,24 +416,6 @@ public class IntCodeMachine
             param1Mode = opRaw / 100 % 10;
             param2Mode = opRaw / 1000 % 10;
             param3Mode = opRaw / 10000 % 10;
-        }
-        
-        
-        public long getOutput()
-        {
-            return output;
-        }
-        
-        public long getInput()
-        {
-            inputReady = false;
-            return input;
-        }
-        
-        public void setInput(long input)
-        {
-            this.input = input;
-            inputReady = true;
         }
         
         public int getParam3Mode()
@@ -437,15 +438,10 @@ public class IntCodeMachine
             return opCode;
         }
         
-        public boolean inputReady()
-        {
-            return inputReady;
-        }
-        
         @Override
         public String toString()
         {
-            return opCode.name() + "(in:" + input + ") (out:" + output + ")";
+            return opCode.name();
         }
     }
 }

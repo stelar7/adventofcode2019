@@ -35,9 +35,8 @@ public class One
     public static long runAmp(int setting, long prev)
     {
         Amp A = new Amp(setting);
-        A.machine.runToInput();
         A.input(prev);
-        A.machine.runToOutput();
+        A.machine.runToEnd();
         return A.output();
     }
     

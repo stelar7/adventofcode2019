@@ -1,14 +1,42 @@
 package day11;
 
-import utils.sources.StringFromFileSupplier;
+import org.joml.Vector2i;
+import utils.*;
 
-import java.util.List;
+import java.util.*;
 
 public class One
 {
+    
     public static void main(String[] args)
     {
-        List<String> input = StringFromFileSupplier.create("day11.input", false).getDataSource();
+        IntCodeMachine      machine = new IntCodeMachine("day11.input");
+        Map<Vector2i, Long> colors  = new HashMap<>();
+        paint(machine, colors);
         
+        System.out.println(colors.size());
+    }
+    
+    public static void paint(IntCodeMachine brain, Map<Vector2i, Long> canvas)
+    {
+        Turtle turtle = new Turtle();
+        while (brain.running)
+        {
+            long color = canvas.getOrDefault(turtle.position(), 0L);
+            brain.input(color);
+            
+            brain.queueOutput(2);
+            if (!brain.running)
+            {
+                break;
+            }
+            
+            long newColor = brain.output();
+            canvas.put(turtle.position(), newColor);
+            
+            long turn = brain.output();
+            turtle.turn(turn);
+            turtle.step();
+        }
     }
 }

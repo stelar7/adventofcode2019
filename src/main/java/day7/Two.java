@@ -15,7 +15,7 @@ public class Two
         List<List<Integer>> permutations2 = Utils.permutations(new ArrayList<>(List.of(5, 6, 7, 8, 9)));
         for (List<Integer> permutation : permutations2)
         {
-            Amp                        previusAmp = new Amp(0);
+            Amp                        previusAmp = null;
             Amp                        A          = new Amp(permutation.get(0));
             Amp                        B          = new Amp(permutation.get(1));
             Amp                        C          = new Amp(permutation.get(2));
@@ -24,23 +24,24 @@ public class Two
             RepeatingListIterator<Amp> li         = new RepeatingListIterator(List.of(A, B, C, D, E));
             
             Amp currentAmp = li.next();
-            System.out.println("init done");
-            
-            
             while (currentAmp.machine.running)
             {
-                currentAmp.machine.runToInput();
-                currentAmp.input(previusAmp.output());
-                currentAmp.machine.runToOutput();
+                if (previusAmp != null && !previusAmp.machine.running)
+                {
+                    break;
+                }
+                
+                long previous = previusAmp == null ? 0 : previusAmp.output();
+                if (previous > best)
+                {
+                    best = previous;
+                }
+                
+                currentAmp.input(previous);
+                currentAmp.machine.queueOutput();
                 
                 previusAmp = currentAmp;
                 currentAmp = li.next();
-                
-                long test = previusAmp.output();
-                if (test > best)
-                {
-                    best = test;
-                }
             }
         }
         

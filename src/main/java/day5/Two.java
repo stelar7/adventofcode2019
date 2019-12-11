@@ -7,14 +7,8 @@ public class Two
     public static void main(String[] args)
     {
         IntCodeMachine intcode = new IntCodeMachine("day5.input");
-        intcode.runToInput();
         intcode.input(5);
-        
-        while (intcode.running)
-        {
-            intcode.runToOutput();
-        }
-        
-        System.out.println(intcode.output());
+        intcode.runToEnd();
+        System.out.println(intcode.lastOutput());
     }
 }

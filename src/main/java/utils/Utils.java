@@ -1,8 +1,9 @@
 package utils;
 
-import org.joml.Vector2i;
+import org.joml.*;
 
 import java.io.*;
+import java.lang.Math;
 import java.lang.reflect.*;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -251,5 +252,21 @@ public class Utils
         }
         
         return highestIndex;
+    }
+    
+    public static Rectanglef findBoundingBox(Collection<Vector2i> keys)
+    {
+        int minx = keys.stream().min(Comparator.comparingInt(v -> v.x)).get().x;
+        int maxx = keys.stream().max(Comparator.comparingInt(v -> v.x)).get().x;
+        
+        int miny = keys.stream().min(Comparator.comparingInt(v -> v.y)).get().y;
+        int maxy = keys.stream().max(Comparator.comparingInt(v -> v.y)).get().y;
+        
+        return new Rectanglef(minx, miny, maxx, maxy);
+    }
+    
+    public static String getBlockCharIfTrue(boolean predicate)
+    {
+        return predicate ? "█" : " ";
     }
 }
