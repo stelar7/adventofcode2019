@@ -271,7 +271,7 @@ public class IntCodeMachine
     {
         this.memory.putAll(tape);
         this.memory_b.putAll(tape);
-        currentOp = new OpCodeParameters(Math.toIntExact(memory.get(index[0])));
+        currentOp = new OpCodeParameters(Math.toIntExact(memory.getOrDefault(index[0], 99L)));
     }
     
     public IntCodeMachine(String filename)
