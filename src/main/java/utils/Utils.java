@@ -269,4 +269,33 @@ public class Utils
     {
         return predicate ? "█" : " ";
     }
+    
+    public static long gcd(long a, long b)
+    {
+        if (b == 0)
+        {
+            return a;
+        }
+        return gcd(b, a % b);
+    }
+    
+    public static <T> List<List<T>> generateUniquePairs(List<T> input)
+    {
+        List<List<T>> output = new ArrayList<>();
+        
+        for (int i = 0; i < input.size(); i++)
+        {
+            for (int j = i + 1; j < input.size(); j++)
+            {
+                output.add(List.of(input.get(i), input.get(j)));
+            }
+        }
+        
+        return output;
+    }
+    
+    public static long lcm(long a, long b)
+    {
+        return a / gcd(a, b) * b;
+    }
 }
