@@ -3,9 +3,15 @@ package utils;
 import utils.sources.IntFromFileSupplier;
 
 import java.util.*;
+import java.util.function.Supplier;
 
 public class IntCodeMachine
 {
+    public boolean isRunning()
+    {
+        return running;
+    }
+    
     public enum OPCode
     {
         HALT(99), ADD(1), MUL(2), INPUT(3), OUTPUT(4), JUMP_TRUE(5), JUMP_FALSE(6), LESS(7), EQUAL(8), REL_ADJUST(9);
@@ -114,7 +120,7 @@ public class IntCodeMachine
         
         put(OPCode.INPUT, (tape, index, relbase, op) -> {
             long valueA = getValueFromParamMode(tape, relbase, op.param1Mode, index[0] + 1L, true);
-            tape.put(valueA, inputs.poll());
+            tape.put(valueA, inputSupplier == null ? inputs.poll() : inputSupplier.get());
             index[0] += 2;
             
             if (debugging)
@@ -260,12 +266,13 @@ public class IntCodeMachine
     private Map<Long, Long> memory       = new HashMap<>();
     private Map<Long, Long> memory_b     = new HashMap<>();
     
-    
     public OpCodeParameters currentOp = null;
     public OpCodeParameters prevOp    = null;
     
-    public boolean running   = true;
-    public boolean debugging = false;
+    private boolean running   = true;
+    public  boolean debugging = false;
+    
+    public Supplier<Long> inputSupplier;
     
     public IntCodeMachine(Map<Long, Long> tape)
     {
@@ -279,15 +286,28 @@ public class IntCodeMachine
         this(getTape(filename));
     }
     
-    public void reset()
+    public void setInputFunction(Supplier<Long> prod)
     {
-        memory.clear();
-        memory.putAll(memory_b);
+        inputSupplier = prod;
+    }
+    
+    /**
+     * retains current memory, but resets other variables
+     */
+    public void restart()
+    {
         index[0] = 0L;
         relativeBase[0] = 0L;
         prevOp = null;
         running = true;
-        currentOp = new OpCodeParameters(Math.toIntExact(memory.get(index[0])));
+        currentOp = new OpCodeParameters(Math.toIntExact(memory.getOrDefault(index[0], 99L)));
+    }
+    
+    public void reset()
+    {
+        memory.clear();
+        memory.putAll(memory_b);
+        restart();
     }
     
     public void next()
@@ -313,6 +333,11 @@ public class IntCodeMachine
         {
             next();
         }
+        
+        if (currentOp.opCode == OPCode.HALT)
+        {
+            System.out.println("Machine halted, input ignored");
+        }
     }
     
     /**
@@ -325,6 +350,11 @@ public class IntCodeMachine
             next();
         }
         next();
+        
+        if (currentOp.opCode == OPCode.HALT)
+        {
+            System.out.println("Machine halted, check if running before consuming output!");
+        }
     }
     
     public void queueOutput(int times)
@@ -354,7 +384,7 @@ public class IntCodeMachine
         return outputs.pollFirst();
     }
     
-    public long peekOutput()
+    public Long peekOutput()
     {
         return outputs.peekFirst();
     }
@@ -364,10 +394,23 @@ public class IntCodeMachine
         return outputs.pollLast();
     }
     
-    
     public void setMemory(long address, long value)
     {
         memory.put(address, value);
+        if (address == 0L)
+        {
+            System.out.println("Setting address 0 will not work unless the program loops, did you mean to add \"false\" as the 3rd parameter?");
+        }
+    }
+    
+    public void setMemory(long address, long value, boolean restart)
+    {
+        memory.put(address, value);
+        
+        if (restart)
+        {
+            restart();
+        }
     }
     
     public long getMemory(long address)

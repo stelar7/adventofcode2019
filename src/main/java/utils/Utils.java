@@ -298,4 +298,20 @@ public class Utils
     {
         return a / gcd(a, b) * b;
     }
+    
+    public static void drawGrid(Map<Vector2i, Long> tiles, Map<Long, String> images)
+    {
+        Rectanglef rect = Utils.findBoundingBox(tiles.keySet());
+        for (int i = (int) rect.minY; i <= rect.maxY; i++)
+        {
+            for (int j = (int) rect.minX; j <= rect.maxX; j++)
+            {
+                long   color   = tiles.getOrDefault(new Vector2i(j, i), 0L);
+                String locChar = images.get(color);
+                
+                System.out.print(locChar);
+            }
+            System.out.println();
+        }
+    }
 }

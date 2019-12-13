@@ -24,9 +24,9 @@ public class Two
             RepeatingListIterator<Amp> li         = new RepeatingListIterator(List.of(A, B, C, D, E));
             
             Amp currentAmp = li.next();
-            while (currentAmp.machine.running)
+            while (currentAmp.machine.isRunning())
             {
-                if (previusAmp != null && !previusAmp.machine.running)
+                if (previusAmp != null && !previusAmp.machine.isRunning())
                 {
                     break;
                 }

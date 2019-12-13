@@ -20,13 +20,13 @@ public class One
     public static void paint(IntCodeMachine brain, Map<Vector2i, Long> canvas)
     {
         Turtle turtle = new Turtle();
-        while (brain.running)
+        while (brain.isRunning())
         {
             long color = canvas.getOrDefault(turtle.position(), 0L);
             brain.input(color);
             
             brain.queueOutput(2);
-            if (!brain.running)
+            if (!brain.isRunning())
             {
                 break;
             }
