@@ -2,7 +2,14 @@ package utils;
 
 public enum Direction
 {
-    NORTH, SOUTH, WEST, EAST;
+    NORTH(1L), SOUTH(2L), WEST(3L), EAST(4L);
+    
+    public long val;
+    
+    Direction(long l)
+    {
+        this.val = l;
+    }
     
     public Direction left()
     {

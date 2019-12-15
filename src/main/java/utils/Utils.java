@@ -341,7 +341,7 @@ public class Utils
     /**
      * anything other than id 0 and id 1 are considered walkable
      */
-    public static RouteFinder<VectorNode> generatePathfindingGraph(Map<Vector2i, Long> map)
+    public static AStarRouteFinder<VectorNode> generatePathfindingGraph(Map<Vector2i, Long> map)
     {
         Set<VectorNode>          points      = new HashSet<>();
         Map<String, Set<String>> connections = new HashMap<>();
@@ -382,6 +382,49 @@ public class Utils
         });
         
         Graph<VectorNode> grid = new Graph<>(points, connections);
-        return new RouteFinder<>(grid, (a, b) -> 1, (a, b) -> Utils.manhattanDistance(a.getPos(), b.getPos()));
+        return new AStarRouteFinder<>(grid, (a, b) -> 1, (a, b) -> Utils.manhattanDistance(a.getPos(), b.getPos()));
+    }
+    
+    public static List<VectorNode> findLongestPath(Map<Vector2i, Long> map, Vector2i start)
+    {
+        AStarRouteFinder<VectorNode> finder     = Utils.generatePathfindingGraph(map);
+        List<Long>                   unwalkable = List.of(0L, 1L);
+        
+        List<VectorNode>       longest     = null;
+        int                    max         = Integer.MIN_VALUE;
+        Map<Vector2i, Integer> distanceMap = new HashMap<>();
+        Rectanglef             boundingBox = Utils.findBoundingBox(map.keySet());
+        for (int i = (int) boundingBox.minY; i < boundingBox.maxY; i++)
+        {
+            for (int j = (int) boundingBox.minX; j < boundingBox.maxX; j++)
+            {
+                Vector2i check = new Vector2i(j, i);
+                long     type  = map.getOrDefault(check, 0L);
+                if (unwalkable.contains(type))
+                {
+                    continue;
+                }
+                
+                if (distanceMap.containsKey(check))
+                {
+                    continue;
+                }
+                
+                List<VectorNode> path = finder.findRoute(new VectorNode(start), new VectorNode(check));
+                for (int distance = 0; distance < path.size(); distance++)
+                {
+                    VectorNode node = path.get(distance);
+                    distanceMap.put(node.getPos(), distance + 1);
+                }
+                
+                if (path.size() > max)
+                {
+                    max = path.size();
+                    longest = path;
+                }
+            }
+        }
+        
+        return longest;
     }
 }

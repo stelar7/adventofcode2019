@@ -2,13 +2,13 @@ package utils.pathfinding;
 
 import java.util.*;
 
-public class RouteFinder<T extends GraphNode>
+public class AStarRouteFinder<T extends GraphNode>
 {
     private final Graph<T>  graph;
     private final Scorer<T> nextNodeScorer;
     private final Scorer<T> targetScorer;
     
-    public RouteFinder(Graph<T> graph, Scorer<T> nextNodeScorer, Scorer<T> targetScorer)
+    public AStarRouteFinder(Graph<T> graph, Scorer<T> nextNodeScorer, Scorer<T> targetScorer)
     {
         this.graph = graph;
         this.nextNodeScorer = nextNodeScorer;
