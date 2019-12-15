@@ -1,6 +1,7 @@
 package utils;
 
 import org.joml.*;
+import utils.pathfinding.*;
 
 import java.io.*;
 import java.lang.Math;
@@ -299,6 +300,18 @@ public class Utils
         return a / gcd(a, b) * b;
     }
     
+    
+    public static Map<Long, String> defaultTileSet()
+    {
+        Map<Long, String> tiles = new HashMap<>();
+        tiles.put(0L, "?");
+        tiles.put(1L, "█");
+        tiles.put(2L, " ");
+        tiles.put(3L, "X");
+        tiles.put(4L, "*");
+        return tiles;
+    }
+    
     public static void drawGrid(Map<Vector2i, Long> tiles, Map<Long, String> images)
     {
         Rectanglef rect = Utils.findBoundingBox(tiles.keySet());
@@ -313,5 +326,62 @@ public class Utils
             }
             System.out.println();
         }
+    }
+    
+    public static void drawGrid(Map<Vector2i, Long> tiles)
+    {
+        drawGrid(tiles, Utils.defaultTileSet());
+    }
+    
+    public static String vector2iToString(Vector2i in)
+    {
+        return in.x + ", " + in.y;
+    }
+    
+    /**
+     * anything other than id 0 and id 1 are considered walkable
+     */
+    public static RouteFinder<VectorNode> generatePathfindingGraph(Map<Vector2i, Long> map)
+    {
+        Set<VectorNode>          points      = new HashSet<>();
+        Map<String, Set<String>> connections = new HashMap<>();
+        List<Long>               unwalkable  = List.of(0L, 1L);
+        
+        
+        map.forEach((k, v) -> points.add(new VectorNode(k)));
+        map.forEach((k, v) -> {
+            if (v != 0L && v != 1L)
+            {
+                Set<String> nearby = new HashSet<>();
+                Vector2i    test   = k.add(1, 0, new Vector2i());
+                if (map.containsKey(test) && !unwalkable.contains(map.get(test)))
+                {
+                    nearby.add(Utils.vector2iToString(test));
+                }
+                
+                test = k.add(-1, 0, new Vector2i());
+                if (map.containsKey(test) && !unwalkable.contains(map.get(test)))
+                {
+                    nearby.add(Utils.vector2iToString(test));
+                }
+                
+                test = k.add(0, 1, new Vector2i());
+                if (map.containsKey(test) && !unwalkable.contains(map.get(test)))
+                {
+                    nearby.add(Utils.vector2iToString(test));
+                }
+                
+                test = k.add(0, -1, new Vector2i());
+                if (map.containsKey(test) && !unwalkable.contains(map.get(test)))
+                {
+                    nearby.add(Utils.vector2iToString(test));
+                }
+                
+                connections.put(Utils.vector2iToString(k), nearby);
+            }
+        });
+        
+        Graph<VectorNode> grid = new Graph<>(points, connections);
+        return new RouteFinder<>(grid, (a, b) -> 1, (a, b) -> Utils.manhattanDistance(a.getPos(), b.getPos()));
     }
 }
