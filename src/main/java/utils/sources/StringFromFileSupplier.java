@@ -21,4 +21,5 @@ public class StringFromFileSupplier extends FromFileSupplier<String>
     {
         return new StringFromFileSupplier(inputFile, infinite);
     }
+    
 }

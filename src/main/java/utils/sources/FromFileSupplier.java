@@ -12,7 +12,7 @@ public class FromFileSupplier<T> implements Supplier<T>, SourceSupplier<T>
     private int     index = 0;
     private boolean repeating;
     
-    private FromFileSupplier(List<T> values, boolean repeating)
+    public FromFileSupplier(List<T> values, boolean repeating)
     {
         this.repeating = repeating;
         this.data = values;

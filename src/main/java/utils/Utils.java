@@ -427,4 +427,9 @@ public class Utils
         
         return longest;
     }
+    
+    public static int realMod(int a, int b)
+    {
+        return (((a % b) + b) % b);
+    }
 }
