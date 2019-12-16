@@ -50,6 +50,7 @@ public class IntCodeMachine
         {
             if (stat.mode == 0)
             {
+                //System.out.printf("%%%d ", stat.param);
                 System.out.printf("%%%d(%d) ", stat.param, stat.val);
             }
             if (stat.mode == 1)
@@ -58,6 +59,7 @@ public class IntCodeMachine
             }
             if (stat.mode == 2)
             {
+                //System.out.printf("%%%d+%d ", stat.param, rel);
                 System.out.printf("%%%d(%d)+%d ", stat.param, stat.val, rel);
             }
         }
@@ -86,7 +88,7 @@ public class IntCodeMachine
                 List<OpcodeStatus> status = Arrays.asList(new OpcodeStatus(op.param1Mode, memory.getOrDefault(index[0] + 1L, 0L), valueA),
                                                           new OpcodeStatus(op.param2Mode, memory.getOrDefault(index[0] + 2L, 0L), valueB),
                                                           new OpcodeStatus(op.param3Mode, memory.getOrDefault(index[0] + 3L, 0L), valueC));
-                printOpcode("MUL", relbase[0], status);
+                printOpcode("ADD", relbase[0], status);
                 System.out.print("= " + result);
                 System.out.println();
             }
@@ -318,6 +320,13 @@ public class IntCodeMachine
             return;
         }
         
+        /*
+        if (debugging)
+        {
+            System.out.format("%d %d %d %d %d%n", currentOp.rawOp, currentOp.opCode.code, currentOp.param1Mode, currentOp.param2Mode, currentOp.param3Mode);
+        }
+         */
+        
         ops.get(currentOp.opCode).apply(memory, index, relativeBase, currentOp);
         OpCodeParameters next = new OpCodeParameters(Math.toIntExact(memory.get(index[0])));
         prevOp = currentOp;
@@ -418,6 +427,17 @@ public class IntCodeMachine
         return memory.get(address);
     }
     
+    public void dumpMemory()
+    {
+        long max = memory.keySet().stream().mapToLong(a -> a).max().getAsLong();
+        long min = memory.keySet().stream().mapToLong(a -> a).min().getAsLong();
+        for (long i = min; i <= max; i++)
+        {
+            System.out.print(memory.getOrDefault(i, 0L) + " ");
+        }
+        System.out.println();
+    }
+    
     public static Map<Long, Long> getTape(String filename)
     {
         List<Long>      input  = IntFromFileSupplier.longCreateFromCommaFile(filename, false).getDataSource();
@@ -448,6 +468,7 @@ public class IntCodeMachine
     
     public static class OpCodeParameters
     {
+        public int    rawOp;
         public int    param3Mode;
         public int    param2Mode;
         public int    param1Mode;
@@ -455,6 +476,7 @@ public class IntCodeMachine
         
         public OpCodeParameters(int opRaw)
         {
+            rawOp = opRaw;
             opCode = OPCode.from(opRaw % 100);
             param1Mode = opRaw / 100 % 10;
             param2Mode = opRaw / 1000 % 10;
@@ -479,6 +501,11 @@ public class IntCodeMachine
         public OPCode getOpCode()
         {
             return opCode;
+        }
+        
+        public int getRawOp()
+        {
+            return rawOp;
         }
         
         @Override
