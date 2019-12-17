@@ -7,11 +7,6 @@ import java.util.function.Supplier;
 
 public class IntCodeMachine
 {
-    public boolean isRunning()
-    {
-        return running;
-    }
-    
     public enum OPCode
     {
         HALT(99), ADD(1), MUL(2), INPUT(3), OUTPUT(4), JUMP_TRUE(5), JUMP_FALSE(6), LESS(7), EQUAL(8), REL_ADJUST(9);
@@ -293,6 +288,35 @@ public class IntCodeMachine
         inputSupplier = prod;
     }
     
+    public boolean isRunning()
+    {
+        return running;
+    }
+    
+    public void printAllOutput()
+    {
+        while (peekOutput() != null)
+        {
+            System.out.println(output());
+        }
+    }
+    
+    public void clearOutputs()
+    {
+        outputs.clear();
+    }
+    
+    public void clearInputs()
+    {
+        inputs.clear();
+    }
+    
+    
+    public List<Long> getInputList()
+    {
+        return new ArrayList<>(inputs);
+    }
+    
     /**
      * retains current memory, but resets other variables
      */
@@ -302,6 +326,8 @@ public class IntCodeMachine
         relativeBase[0] = 0L;
         prevOp = null;
         running = true;
+        inputs.clear();
+        outputs.clear();
         currentOp = new OpCodeParameters(Math.toIntExact(memory.getOrDefault(index[0], 99L)));
     }
     
@@ -383,9 +409,15 @@ public class IntCodeMachine
         }
     }
     
-    public void input(long prev)
+    public void input(long in)
     {
-        inputs.addLast(prev);
+        inputs.addLast(in);
+    }
+    
+    
+    public void input(List<Long> in)
+    {
+        inputs.addAll(in);
     }
     
     public long output()
@@ -462,7 +494,6 @@ public class IntCodeMachine
         {
             value += relbase[0];
         }
-        
         return isOutput ? value : memory.getOrDefault(value, 0L);
     }
     

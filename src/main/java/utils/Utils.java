@@ -328,6 +328,19 @@ public class Utils
         }
     }
     
+    public static void drawGridValues(Map<Vector2i, Long> tiles)
+    {
+        Rectanglef rect = Utils.findBoundingBox(tiles.keySet());
+        for (int i = (int) rect.minY; i <= rect.maxY; i++)
+        {
+            for (int j = (int) rect.minX; j <= rect.maxX; j++)
+            {
+                System.out.print(tiles.getOrDefault(new Vector2i(j, i), -1L) + " ");
+            }
+            System.out.println();
+        }
+    }
+    
     public static void drawGrid(Map<Vector2i, Long> tiles)
     {
         drawGrid(tiles, Utils.defaultTileSet());
@@ -431,5 +444,92 @@ public class Utils
     public static int realMod(int a, int b)
     {
         return (((a % b) + b) % b);
+    }
+    
+    public static Map<Long, String> ASCIITiles()
+    {
+        Map<Long, String> tiles = new HashMap<>();
+        for (int i = 0; i < 256; i++)
+        {
+            if (i == 10)
+            {
+                tiles.put((long) i, ".");
+                continue;
+            }
+            
+            tiles.put((long) i, Character.toString((char) i));
+        }
+        return tiles;
+    }
+    
+    public static Set<Vector2i> findNearbyNodes(Map<Vector2i, Long> grid, Vector2i center, long value)
+    {
+        Set<Vector2i> nearby = new HashSet<>();
+        
+        Vector2i test = center.add(1, 0, new Vector2i());
+        if (grid.getOrDefault(test, -1L) == value)
+        {
+            nearby.add(test);
+        }
+        
+        test = center.add(-1, 0, new Vector2i());
+        if (grid.getOrDefault(test, -1L) == value)
+        {
+            nearby.add(test);
+        }
+        
+        test = center.add(0, 1, new Vector2i());
+        if (grid.getOrDefault(test, -1L) == value)
+        {
+            nearby.add(test);
+        }
+        
+        test = center.add(0, -1, new Vector2i());
+        if (grid.getOrDefault(test, -1L) == value)
+        {
+            nearby.add(test);
+        }
+        
+        return nearby;
+    }
+    
+    public static String longestRepeatedSubstring(String str)
+    {
+        int     n     = str.length();
+        int[][] LCSRe = new int[n + 1][n + 1];
+        
+        StringBuilder res       = new StringBuilder();
+        int           resLength = 0;
+        
+        int i, index = 0;
+        for (i = 1; i <= n; i++)
+        {
+            for (int j = i + 1; j <= n; j++)
+            {
+                if (str.charAt(i - 1) == str.charAt(j - 1) && LCSRe[i - 1][j - 1] < (j - i))
+                {
+                    LCSRe[i][j] = LCSRe[i - 1][j - 1] + 1;
+                    
+                    if (LCSRe[i][j] > resLength)
+                    {
+                        resLength = LCSRe[i][j];
+                        index = Math.max(i, index);
+                    }
+                } else
+                {
+                    LCSRe[i][j] = 0;
+                }
+            }
+        }
+        
+        if (resLength > 0)
+        {
+            for (i = index - resLength + 1; i <= index; i++)
+            {
+                res.append(str.charAt(i - 1));
+            }
+        }
+        
+        return res.toString();
     }
 }

@@ -19,7 +19,7 @@ public class One
     
     public static void paint(IntCodeMachine brain, Map<Vector2i, Long> canvas)
     {
-        Turtle turtle = new Turtle();
+        Droid turtle = new Droid();
         while (brain.isRunning())
         {
             long color = canvas.getOrDefault(turtle.position(), 0L);
