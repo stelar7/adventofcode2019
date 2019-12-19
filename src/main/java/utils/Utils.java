@@ -8,7 +8,7 @@ import java.lang.Math;
 import java.lang.reflect.*;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.*;
 import java.util.function.*;
 import java.util.regex.*;
 import java.util.stream.Collectors;
@@ -312,6 +312,26 @@ public class Utils
         return tiles;
     }
     
+    public static Map<Long, String> numberTileset()
+    {
+        Map<Long, String> tiles = new HashMap<>();
+        for (int i = 0; i < 256; i++)
+        {
+            tiles.put((long) i, String.valueOf(i));
+        }
+        return tiles;
+    }
+    
+    public static Map<Long, String> letterileset()
+    {
+        Map<Long, String> tiles = new HashMap<>();
+        for (int i = 'A'; i < 'a' + 'a' - 'A'; i++)
+        {
+            tiles.put((long) i - 'A', Character.toString(i));
+        }
+        return tiles;
+    }
+    
     public static void drawGrid(Map<Vector2i, Long> tiles, Map<Long, String> images)
     {
         Rectanglef rect = Utils.findBoundingBox(tiles.keySet());
@@ -451,43 +471,40 @@ public class Utils
         Map<Long, String> tiles = new HashMap<>();
         for (int i = 0; i < 256; i++)
         {
-            if (i == 10)
-            {
-                tiles.put((long) i, ".");
-                continue;
-            }
-            
             tiles.put((long) i, Character.toString((char) i));
         }
         return tiles;
     }
     
-    public static Set<Vector2i> findNearbyNodes(Map<Vector2i, Long> grid, Vector2i center, long value)
+    public static Set<Vector2i> findNeighbourNodes8(Map<Vector2i, Long> grid, Vector2i center, long value)
+    {
+        return findNeighbourNodesHelper((a, b) -> a.equals(b) && b == 0, 1, grid, center, value);
+    }
+    
+    public static Set<Vector2i> findNeighbourNodes4(Map<Vector2i, Long> grid, Vector2i center, long value)
+    {
+        return findNeighbourNodesHelper((a, b) -> Math.abs(a) == Math.abs(b), 1, grid, center, value);
+    }
+    
+    private static Set<Vector2i> findNeighbourNodesHelper(BiFunction<Integer, Integer, Boolean> skipIfTrue, int distance, Map<Vector2i, Long> grid, Vector2i center, long value)
     {
         Set<Vector2i> nearby = new HashSet<>();
         
-        Vector2i test = center.add(1, 0, new Vector2i());
-        if (grid.getOrDefault(test, -1L) == value)
+        for (int i = -distance; i <= distance; i++)
         {
-            nearby.add(test);
-        }
-        
-        test = center.add(-1, 0, new Vector2i());
-        if (grid.getOrDefault(test, -1L) == value)
-        {
-            nearby.add(test);
-        }
-        
-        test = center.add(0, 1, new Vector2i());
-        if (grid.getOrDefault(test, -1L) == value)
-        {
-            nearby.add(test);
-        }
-        
-        test = center.add(0, -1, new Vector2i());
-        if (grid.getOrDefault(test, -1L) == value)
-        {
-            nearby.add(test);
+            for (int j = -distance; j <= distance; j++)
+            {
+                if (skipIfTrue.apply(i, j))
+                {
+                    continue;
+                }
+                
+                Vector2i test = center.add(i, j, new Vector2i());
+                if (grid.getOrDefault(test, -1L) == value)
+                {
+                    nearby.add(test);
+                }
+            }
         }
         
         return nearby;
@@ -531,5 +548,37 @@ public class Utils
         }
         
         return res.toString();
+    }
+    
+    
+    public static Map<Vector2i, Long> parseGrid(List<String> input)
+    {
+        Map<String, Long>   lookup = new HashMap<>();
+        Map<Vector2i, Long> grid   = new HashMap<>();
+        AtomicLong          index  = new AtomicLong(0L);
+        
+        for (String line : input)
+        {
+            line.chars().forEach(c -> {
+                if (!lookup.containsKey(Character.toString(c)))
+                {
+                    lookup.put(Character.toString(c), index.getAndIncrement());
+                }
+            });
+        }
+        
+        AtomicInteger x = new AtomicInteger();
+        AtomicInteger y = new AtomicInteger();
+        for (String line : input)
+        {
+            line.chars().forEach(c -> {
+                grid.put(new Vector2i(x.get(), y.get()), lookup.get(Character.toString(c)));
+                x.getAndIncrement();
+            });
+            x.set(0);
+            y.getAndIncrement();
+        }
+        
+        return grid;
     }
 }

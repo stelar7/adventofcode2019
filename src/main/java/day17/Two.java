@@ -12,7 +12,8 @@ public class Two
     {
         IntCodeMachine      machine  = new IntCodeMachine("day17.input");
         Map<Vector2i, Long> grid     = One.generateGrid(machine);
-        List<String>        shortest = findBestSubsequence(grid);
+        String              path     = findPath(grid);
+        List<String>        shortest = findFullSubsequence(path);
         
         expandAndAddNewline(shortest);
         String     input = String.join("", shortest) + "n\n";
@@ -49,17 +50,16 @@ public class Two
         }
     }
     
-    private static List<String> findBestSubsequence(Map<Vector2i, Long> grid)
+    private static List<String> findFullSubsequence(String path)
     {
         List<String> returned = new ArrayList<>();
         
         char         repl    = 'A';
-        String       path    = findPath(grid);
         List<String> ignored = new ArrayList<>();
         for (int i = 0; i < 3; i++)
         {
             ignored.add(Character.toString(repl++));
-            String substr = findSubsequence(path, ignored);
+            String substr = findBestSubsequence(path, ignored);
             path = path.replace(substr, ignored.get(ignored.size() - 1));
             returned.add(substr);
         }
@@ -67,7 +67,8 @@ public class Two
         return returned;
     }
     
-    private static String findSubsequence(String path, List<String> offset)
+    // LZ77?
+    private static String findBestSubsequence(String path, List<String> offset)
     {
         StringBuilder sb = new StringBuilder(path);
         sb.reverse();

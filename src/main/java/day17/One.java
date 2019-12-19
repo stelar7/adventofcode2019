@@ -16,7 +16,7 @@ public class One
         grid.forEach((k, v) -> {
             if (v == 35L)
             {
-                Set<Vector2i> nearby = Utils.findNearbyNodes(grid, k, 35L);
+                Set<Vector2i> nearby = Utils.findNeighbourNodes4(grid, k, 35L);
                 if (nearby.size() >= 3)
                 {
                     intersections.add(k);

@@ -386,7 +386,7 @@ public class IntCodeMachine
         }
         next();
         
-        if (currentOp.opCode == OPCode.HALT)
+        if (debugging && currentOp.opCode == OPCode.HALT)
         {
             System.out.println("Machine halted, check if running before consuming output!");
         }
