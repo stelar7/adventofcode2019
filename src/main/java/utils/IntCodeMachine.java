@@ -7,6 +7,7 @@ import java.util.function.Supplier;
 
 public class IntCodeMachine
 {
+    
     public enum OPCode
     {
         HALT(99), ADD(1), MUL(2), INPUT(3), OUTPUT(4), JUMP_TRUE(5), JUMP_FALSE(6), LESS(7), EQUAL(8), REL_ADJUST(9);
@@ -117,7 +118,7 @@ public class IntCodeMachine
         
         put(OPCode.INPUT, (tape, index, relbase, op) -> {
             long valueA = getValueFromParamMode(tape, relbase, op.param1Mode, index[0] + 1L, true);
-            tape.put(valueA, inputSupplier == null ? inputs.poll() : inputSupplier.get());
+            tape.put(valueA, inputs.size() > 0 ? inputs.poll() : inputSupplier.get());
             index[0] += 2;
             
             if (debugging)
@@ -299,6 +300,11 @@ public class IntCodeMachine
         {
             System.out.println(output());
         }
+    }
+    
+    public int outputSize()
+    {
+        return outputs.size();
     }
     
     public void clearOutputs()
