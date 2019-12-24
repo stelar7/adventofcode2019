@@ -553,26 +553,14 @@ public class Utils
     
     public static Map<Vector2i, Long> parseGrid(List<String> input)
     {
-        Map<String, Long>   lookup = new HashMap<>();
-        Map<Vector2i, Long> grid   = new HashMap<>();
-        AtomicLong          index  = new AtomicLong(0L);
-        
-        for (String line : input)
-        {
-            line.chars().forEach(c -> {
-                if (!lookup.containsKey(Character.toString(c)))
-                {
-                    lookup.put(Character.toString(c), index.getAndIncrement());
-                }
-            });
-        }
+        Map<Vector2i, Long> grid = new HashMap<>();
         
         AtomicInteger x = new AtomicInteger();
         AtomicInteger y = new AtomicInteger();
         for (String line : input)
         {
             line.chars().forEach(c -> {
-                grid.put(new Vector2i(x.get(), y.get()), lookup.get(Character.toString(c)));
+                grid.put(new Vector2i(x.get(), y.get()), (long) c);
                 x.getAndIncrement();
             });
             x.set(0);
