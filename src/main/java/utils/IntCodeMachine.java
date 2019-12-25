@@ -420,6 +420,10 @@ public class IntCodeMachine
         inputs.addLast(in);
     }
     
+    public void input(String in)
+    {
+        input(Utils.toASCII(in + "\n"));
+    }
     
     public void input(List<Long> in)
     {
@@ -429,6 +433,13 @@ public class IntCodeMachine
     public long output()
     {
         return outputs.pollFirst();
+    }
+    
+    public List<Long> outputList()
+    {
+        List<Long> outs = new ArrayList<>(outputs);
+        outputs.clear();
+        return outs;
     }
     
     public Long peekOutput()

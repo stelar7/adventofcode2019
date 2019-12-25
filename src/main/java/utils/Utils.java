@@ -587,4 +587,17 @@ public class Utils
         
         return false;
     }
+    
+    public static List<Long> toASCII(String input)
+    {
+        List<Long> out = new ArrayList<>();
+        input.chars().mapToLong(a -> a).forEach(out::add);
+        return out;
+    }
+    
+    public static String fromASCII(List<Long> input)
+    {
+        String out = input.stream().map(c -> Character.toString(c.intValue())).collect(Collectors.joining());
+        return out;
+    }
 }

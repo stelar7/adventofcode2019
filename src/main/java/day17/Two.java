@@ -17,7 +17,7 @@ public class Two
         
         expandAndAddNewline(shortest);
         String     input = String.join("", shortest) + "n\n";
-        List<Long> longs = toASCII(input);
+        List<Long> longs = Utils.toASCII(input);
         
         machine.setMemory(0L, 2L, true);
         machine.input(longs);
@@ -111,13 +111,6 @@ public class Two
         }
         
         return sb.toString();
-    }
-    
-    public static List<Long> toASCII(String input)
-    {
-        List<Long> out = new ArrayList<>();
-        input.chars().mapToLong(a -> a).forEach(out::add);
-        return out;
     }
     
     private static String findPath(Map<Vector2i, Long> grid)

@@ -8,7 +8,7 @@ public class Two
 {
     public static void main(String[] args)
     {
-        //IntCodeMachine      machine = new IntCodeMachine("day18.input");
+        // IntCodeMachine      machine = new IntCodeMachine("day18.input");
         List<String> input = StringFromFileSupplier.create("day18.input", false).getDataSource();
         
     }
