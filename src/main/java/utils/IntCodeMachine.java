@@ -294,6 +294,11 @@ public class IntCodeMachine
         return running;
     }
     
+    public boolean isHalted()
+    {
+        return currentOp.opCode == OPCode.HALT;
+    }
+    
     public void printAllOutput()
     {
         while (peekOutput() != null)
@@ -370,15 +375,31 @@ public class IntCodeMachine
      */
     public void queueInput()
     {
+        queueInputInternal(Integer.MAX_VALUE);
+    }
+    
+    public boolean queueInputInternal(int steps)
+    {
         while (currentOp.opCode != OPCode.INPUT && currentOp.opCode != OPCode.HALT)
         {
+            steps--;
             next();
+            
+            if (steps < 0)
+            {
+                return false;
+            }
         }
         
         if (currentOp.opCode == OPCode.HALT)
         {
-            System.out.println("Machine halted, input ignored");
+            if(debugging)
+            {
+                System.out.println("Machine halted, input ignored");
+            }
         }
+        
+        return true;
     }
     
     /**
@@ -386,17 +407,9 @@ public class IntCodeMachine
      */
     public void queueOutput()
     {
-        while (currentOp.opCode != OPCode.OUTPUT && currentOp.opCode != OPCode.HALT)
-        {
-            next();
-        }
-        next();
-        
-        if (debugging && currentOp.opCode == OPCode.HALT)
-        {
-            System.out.println("Machine halted, check if running before consuming output!");
-        }
+        queueOutputInternal(Integer.MAX_VALUE);
     }
+    
     
     public void queueOutput(int times)
     {
@@ -406,6 +419,40 @@ public class IntCodeMachine
         }
     }
     
+    private boolean queueOutputInternal(int steps)
+    {
+        while (currentOp.opCode != OPCode.OUTPUT && currentOp.opCode != OPCode.HALT)
+        {
+            steps--;
+            next();
+            
+            if (steps < 0)
+            {
+                return false;
+            }
+        }
+        next();
+        
+        if (debugging && currentOp.opCode == OPCode.HALT)
+        {
+            System.out.println("Machine halted, check if running before consuming output!");
+        }
+        
+        return true;
+    }
+    
+    public void toNextPrompt()
+    {
+        queueOutput();
+        queueInput();
+    }
+    
+    
+    public boolean toNextPrompt(int maxSteps)
+    {
+        queueOutputInternal(maxSteps);
+        return queueInputInternal(maxSteps);
+    }
     
     public void runToEnd()
     {
@@ -427,6 +474,11 @@ public class IntCodeMachine
     
     public void input(List<Long> in)
     {
+        if (debugging)
+        {
+            System.out.println(Utils.fromASCII(in));
+        }
+        
         inputs.addAll(in);
     }
     
@@ -435,10 +487,14 @@ public class IntCodeMachine
         return outputs.pollFirst();
     }
     
-    public List<Long> outputList()
+    public List<Long> outputList(boolean clear)
     {
         List<Long> outs = new ArrayList<>(outputs);
-        outputs.clear();
+        if (clear)
+        {
+            outputs.clear();
+        }
+        
         return outs;
     }
     

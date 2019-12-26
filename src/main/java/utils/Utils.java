@@ -322,7 +322,7 @@ public class Utils
         return tiles;
     }
     
-    public static Map<Long, String> letterileset()
+    public static Map<Long, String> lettersTileset()
     {
         Map<Long, String> tiles = new HashMap<>();
         for (int i = 'A'; i < 'a' + 'a' - 'A'; i++)
@@ -599,5 +599,131 @@ public class Utils
     {
         String out = input.stream().map(c -> Character.toString(c.intValue())).collect(Collectors.joining());
         return out;
+    }
+    
+    @SafeVarargs
+    public static <T> Set<Set<T>> uniqueCombinations(Collection<T>... items)
+    {
+        return combineUnique(new ArrayList<>(), items);
+    }
+    
+    public static <T> Set<Set<T>> uniqueCombinations(Collection<T> items, int repeats)
+    {
+        Collection<T>[] arr = new Collection[repeats];
+        for (int i = 0; i < repeats; i++)
+        {
+            arr[i] = items;
+        }
+        
+        return combineUnique(new ArrayList<>(), arr);
+    }
+    
+    
+    @SafeVarargs
+    private static <T> Set<Set<T>> combineUnique(Collection<T> soFar, Collection<T>... lists)
+    {
+        Set<Set<T>> combs = new HashSet<>();
+        
+        for (T e : lists[0])
+        {
+            Set<T> temp = new HashSet<>(soFar);
+            temp.add(e);
+            if (lists.length > 1)
+            {
+                combs.addAll(combineUnique(temp, Arrays.copyOfRange(lists, 1, lists.length)));
+            } else
+            {
+                combs.add(temp);
+            }
+        }
+        
+        return combs;
+    }
+    
+    public static <T> List<List<T>> combinations(Collection<T> items, int repeats)
+    {
+        Collection<T>[] arr = new Collection[repeats];
+        for (int i = 0; i < repeats; i++)
+        {
+            arr[i] = items;
+        }
+        
+        return combine(new ArrayList<>(), arr);
+    }
+    
+    @SafeVarargs
+    public static <T> List<List<T>> combinations(Collection<T>... items)
+    {
+        return combine(new ArrayList<>(), items);
+    }
+    
+    @SafeVarargs
+    private static <T> List<List<T>> combine(Collection<T> soFar, Collection<T>... lists)
+    {
+        List<List<T>> combs = new ArrayList<>();
+        
+        for (T e : lists[0])
+        {
+            List<T> temp = new ArrayList<>(soFar);
+            temp.add(e);
+            
+            if (lists.length > 1)
+            {
+                combs.addAll(combine(temp, Arrays.copyOfRange(lists, 1, lists.length)));
+            } else
+            {
+                combs.add(temp);
+            }
+        }
+        
+        return combs;
+    }
+    
+    public static <T> Set<Set<T>> generateGrayCode(List<T> items)
+    {
+        int n = items.size();
+        
+        if (n <= 0)
+        {
+            return Set.of();
+        }
+        
+        List<String> arr = new ArrayList<>();
+        arr.add("0");
+        arr.add("1");
+        for (int i = 2; i < (1 << n); i = i << 1)
+        {
+            for (int j = i - 1; j >= 0; j--)
+            {
+                arr.add(arr.get(j));
+            }
+            
+            for (int j = 0; j < i; j++)
+            {
+                arr.set(j, "0" + arr.get(j));
+            }
+            
+            for (int j = i; j < 2 * i; j++)
+            {
+                arr.set(j, "1" + arr.get(j));
+            }
+        }
+        
+        Set<Set<T>> result = new HashSet<>();
+        for (String code : arr)
+        {
+            Set<T> comb = new HashSet<>();
+            for (int j = 0; j < code.length(); j++)
+            {
+                if (code.charAt(j) == '1')
+                {
+                    comb.add(items.get(j));
+                }
+            }
+            
+            result.add(comb);
+        }
+        
+        return result;
     }
 }
