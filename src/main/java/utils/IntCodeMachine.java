@@ -393,7 +393,7 @@ public class IntCodeMachine
         
         if (currentOp.opCode == OPCode.HALT)
         {
-            if(debugging)
+            if (debugging)
             {
                 System.out.println("Machine halted, input ignored");
             }
@@ -462,9 +462,9 @@ public class IntCodeMachine
         }
     }
     
-    public void input(long in)
+    public void input(Direction in)
     {
-        inputs.addLast(in);
+        input(in.name().toLowerCase());
     }
     
     public void input(String in)
@@ -480,6 +480,11 @@ public class IntCodeMachine
         }
         
         inputs.addAll(in);
+    }
+    
+    public void input(long in)
+    {
+        inputs.addLast(in);
     }
     
     public long output()

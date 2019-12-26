@@ -34,13 +34,13 @@ public class One
         IntCodeMachine machine            = collectItems(roomsWithGoodItems);
         
         List<Direction> pathToExit = paths.get("Pressure-Sensitive Floor").path;
-        Direction       lastStep   = pathToExit.get(pathToExit.size() - 1);
+        Direction       lastStep   = Utils.getLastItem(pathToExit);
         walkPath(machine, pathToExit);
         
-        findCombination(items, machine, lastStep);
+        findCombination(machine, items, lastStep);
     }
     
-    public static void findCombination(List<String> items, IntCodeMachine machine, Direction lastStep)
+    public static void findCombination(IntCodeMachine machine, List<String> items, Direction lastStep)
     {
         Set<Set<String>> combinations = Utils.generateGrayCode(items);
         for (Set<String> combination : combinations)
@@ -48,7 +48,7 @@ public class One
             dropAll(machine, items);
             pickupAll(machine, combination);
             
-            machine.input(lastStep.name().toLowerCase());
+            machine.input(lastStep);
             machine.toNextPrompt();
             
             String output = Utils.fromASCII(machine.outputList(true));
@@ -85,7 +85,7 @@ public class One
         for (Direction direction : path)
         {
             machine.outputList(true);
-            machine.input(direction.name().toLowerCase());
+            machine.input(direction);
             machine.toNextPrompt();
         }
     }
@@ -157,7 +157,7 @@ public class One
             }
             
             // try walking to the previous room
-            machine.input(v.path.get(v.path.size() - 1).opposite().name().toLowerCase());
+            machine.input(Utils.getLastItem(v.path).opposite());
             machine.toNextPrompt();
             
             String text     = Utils.fromASCII(machine.outputList(true));

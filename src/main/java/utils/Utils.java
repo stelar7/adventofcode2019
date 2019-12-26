@@ -726,4 +726,14 @@ public class Utils
         
         return result;
     }
+    
+    public static <T> T getLastItem(List<T> list)
+    {
+        if (list.size() == 0)
+        {
+            return null;
+        }
+        
+        return list.get(list.size() - 1);
+    }
 }
